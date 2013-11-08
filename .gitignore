@@ -1,0 +1,15 @@
+# emacs backup files
+*~
+
+# sbt specific
+project/boot
+project/build/target
+target
+
+# ensime files
+.ensime
+.history
+.ensime_lucene
+
+% libs
+lib
