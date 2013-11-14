@@ -9,8 +9,12 @@ object Driver {
 
   def main(args: Array[String]): Unit = {
     // FuMalik using Z3 and circuit-style at-most-k constaint
-    val solver = new FuMalik with Circuit with Z3
-
+    val solver = new FileDriver with FuMalik with Circuit with Z3
+    val file = "/home/shinhwei/workspace/z3/maxsmt-playground/src/main/scala/edu/nus/maxsmtplay/ex.smt"
+    val unsat = solver.solveFromFile(file)
+    //val unsat = solver.solveTest()
+    println(unsat)
+    //smtlib_maxsat(file,0)
     //TODO parse file and call solver.solve(soft, hard)
   }
   

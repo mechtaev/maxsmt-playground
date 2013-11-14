@@ -5,11 +5,11 @@ import z3.scala._
 /**
  * Interface of AtMostK constraint
  */
-trait AtMostK {
+trait AtMostK extends AtMostOne {
 
-  def atMostK(cs: Seq[Z3AST], k:Int)
+  def atMostK(cs: List[Z3AST], k:Int)
 
-  def atMostOne(cs: Seq[Z3AST]) = {
+  override def atMostOne(cs: List[Z3AST]) = {
     atMostK(cs, 1)
   }
 
