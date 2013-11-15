@@ -10,8 +10,6 @@ trait Circuit extends AtMostK {
   this: Z3 =>
 
   override def atMostK(cs: List[Z3AST], k:Int): Unit = {
-    //TODO
-    println("inside cir")
     val n = cs.length
     if (k >= n || n <= 1)
       return
@@ -24,7 +22,6 @@ trait Circuit extends AtMostK {
     var out = not_val
     if(getBit(k,0))
       out =  z3.mkTrue
-      //TODO finish this
     var index = 1
     var i1 = z3.mkFalse()
     var i2 = z3.mkFalse()
@@ -41,7 +38,7 @@ trait Circuit extends AtMostK {
         out = mkTernaryOr(i1, i2, z3.mkAnd(not_val, out));
         index = index+1
     }
-
+     
      z3.assertCnstr(out)
   }
   

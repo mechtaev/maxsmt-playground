@@ -9,7 +9,11 @@ object Driver {
 
   def main(args: Array[String]): Unit = {
     // FuMalik using Z3 and circuit-style at-most-k constaint
-    val solver = new FileDriver with FuMalik with Circuit with Z3
+   /* val solver = new FileDriver with FuMalik with Circuit with Z3
+    val file = "/home/shinhwei/workspace/z3/maxsmt-playground/src/main/scala/edu/nus/maxsmtplay/ex.smt"
+    val unsat = solver.solveFromFile(file)
+    */
+     val solver = new FileDriver with Linear with Circuit with Z3
     val file = "/home/shinhwei/workspace/z3/maxsmt-playground/src/main/scala/edu/nus/maxsmtplay/ex.smt"
     val unsat = solver.solveFromFile(file)
     //val unsat = solver.solveTest()

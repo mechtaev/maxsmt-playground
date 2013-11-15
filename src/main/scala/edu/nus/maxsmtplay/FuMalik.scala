@@ -17,15 +17,13 @@ trait FuMalik extends MaxSMT {
   this: AtMostOne with Z3 =>
 
   override def solve(soft: List[Z3AST], hard: List[Z3AST]): Int = {
-    var softAndAux = soft.map(c => (c, z3.mkFreshConst("a", z3.mkBoolSort)))
-    
-
+    //hard constraints
     hard.map((c: Z3AST) => solver.assertCnstr(c))
     val Some(sat) = solver.check()
     if (!sat) {
       sys.exit(0)
     }
-
+    var softAndAux = soft.map(c => (c, z3.mkFreshConst("a", z3.mkBoolSort)))
     //assert soft and aux:
     val toAssert = softAndAux.map({case (c, a) => z3.mkOr(c, a)})
     println(toAssert.size)
