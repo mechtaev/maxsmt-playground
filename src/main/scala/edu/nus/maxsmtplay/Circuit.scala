@@ -39,7 +39,8 @@ trait Circuit extends AtMostK {
       out = mkTernaryOr(i1, i2, z3.mkAnd(not_val, out))
       index = index + 1
     }
-   // println("out final:" + z3.astToString(out))
+    println("at-most-k:")
+    printlnAST(out)
     solver.context.assertCnstr(out)
   }
 

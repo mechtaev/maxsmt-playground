@@ -11,7 +11,8 @@ object Driver {
   def main(args: Array[String]): Unit = {
     // Initialize solver
     val solver = new FileDriver 
-        with FuMalik with Pairwise with Z3
+     with Linear with Circuit with Z3
+      //  with FuMalik with Pairwise with Z3
       //with FastDiag with Z3
     solver.init()
 

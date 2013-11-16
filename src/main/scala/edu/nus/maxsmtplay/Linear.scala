@@ -9,9 +9,9 @@ trait Linear extends MaxSMT {
   this: Z3 with AtMostK =>
 
   override def solve(soft: List[Z3AST], hard: List[Z3AST]): List[Z3AST] = {
-    println("in linear")
     hard.map((c: Z3AST) => solver.assertCnstr(c))
     val Some(sat) = solver.check()
+    println("checking whether hard constraints are satisfiable...")
     if (!sat) {
       println("result: " + -1)
       return List()
@@ -73,12 +73,15 @@ trait Linear extends MaxSMT {
     var i = 0
     //Some(result)
     while (i < aux.length) {
-      val result = model.eval(aux(i))
-      if (result.eq(Some(true))) {
+      val Some(result) = model.eval(aux(i))
+      print(aux(i))
+      print("->")
+      printlnAST(result)
+      //if (result) {
         if (result.equals(t)) {
           disabled = disabled + 1
         }
-      }
+      //}
       i = i + 1
     }
   /*
