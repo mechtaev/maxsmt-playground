@@ -8,16 +8,22 @@ import z3.scala.dsl._
 trait Linear extends MaxSMT {
   this: Z3 with AtMostK =>
 
-  override def solve(soft: List[Z3AST], hard: List[Z3AST]): Int = {
+  override def solve(soft: List[Z3AST], hard: List[Z3AST]): List[Z3AST] = {
     println("in linear")
     hard.map((c: Z3AST) => solver.assertCnstr(c))
     val Some(sat) = solver.check()
     if (!sat) {
-      return -1
+      println("Linear return: -1")
+      //TODO return constraints
+      return List()
     }
 
-    if (soft.size == 0)
-      return 0 //nothing to be done
+    if (soft.size == 0) {
+      //nothing to be done
+      println("Linear return: 0")
+      //TODO return constraints
+      return List()
+    }
     var softAndAux = soft.map(c => (c, z3.mkFreshConst("a", z3.mkBoolSort)))
     //assert soft and aux:
     var aux = softAndAux.map({ case (c, a) => z3.mkOr(c, a) })
@@ -35,7 +41,11 @@ trait Linear extends MaxSMT {
       val model = resultAndModel._2
       result match {
           case None => println("There was an error with Z3.");
-          case Some(false) => println(soft.size - k - 1) ; (return soft.size - k -1 ) // formula was unsat
+          case Some(false) => {
+            println("Linear return: " + (soft.size - k - 1)) 
+            //TODO return constraints
+            return List()
+          }
           case Some(true) => println("sat");
         }
 
@@ -44,12 +54,16 @@ trait Linear extends MaxSMT {
       if (numDisabled > k)
         throw new Exception("Number of disabled constraints is more than k")
       k = numDisabled
-      if (k == 0)
-        return soft.size
+      if (k == 0) {
+        println("Linear return: " + soft.size)
+        //TODO return constraints
+        return List()
+      }
       k = k - 1
     }
 
-    0
+    println("Linear return: 0")
+    List()
   }
   /**
    * Return the number of soft-constraints that were disable by the given model.
