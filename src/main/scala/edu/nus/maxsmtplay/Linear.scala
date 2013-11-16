@@ -18,31 +18,33 @@ trait Linear extends MaxSMT {
 
     if (soft.size == 0)
       return 0 //nothing to be done
-    var softAndAux = soft.map(c => (c, z3.mkFreshConst("a", z3.mkBoolSort)))
+    var aux = soft.map(c => (z3.mkFreshConst("k", z3.mkBoolSort)))
+    var softAndAux = soft.zip(aux)
     //assert soft and aux:
-    var aux = softAndAux.map({ case (c, a) => z3.mkOr(c, a) })
-    aux.map(solver.assertCnstr)
+    var auxPair = softAndAux.map({ case (c, a) => z3.mkOr(c, a) })
+    auxPair.map(solver.assertCnstr)
+    
     var k = soft.size - 1
     while (true) {
-      println("Before....................")
-      aux.map({ ast => println(z3.astToString(ast))})
-       println("After.....................")
+     // println("Before....................")
+      //aux.map({ ast => println(z3.astToString(ast))})
+      //println("After.....................")
+      println("checking whether at-most "+k+" soft-constraints can be ignored.")
       atMostK(aux, k)
-      println("k:"+k)
-      
       val resultAndModel = z3.checkAndGetModel()
-      val result = resultAndModel._1
+      val Some(result) = resultAndModel._1
       val model = resultAndModel._2
-      result match {
-          case None => println("There was an error with Z3.");
-          case Some(false) => println(soft.size - k - 1) ; (return soft.size - k -1 ) // formula was unsat
-          case Some(true) => println("sat");
-        }
-
+      if (!result) {
+        println("unsat")
+        return (soft.size - k - 1) // formula was unsat
+      }
+      //aux.map({ ast => println("aux:"+z3.astToString(ast)) })
       val numDisabled = getNumDisabledSoftConstraint(model, aux)
-      println("number of disabled:"+numDisabled)
+      println("number of disabled:" + numDisabled)
       if (numDisabled > k)
         throw new Exception("Number of disabled constraints is more than k")
+     model.delete
+      println("sat")
       k = numDisabled
       if (k == 0)
         return soft.size
@@ -52,29 +54,30 @@ trait Linear extends MaxSMT {
     0
   }
   /**
-   * Return the number of soft-constraints that were disable by the given model.
+   * Return the number of soft-constraints that were disabled by the given model.
    * A soft-constraint was disabled if the associated auxiliary variable was assigned to true.
    */
   def getNumDisabledSoftConstraint(model: Z3Model, aux: List[Z3AST]): Int = {
-   
-     val t = z3.mkTrue
-     var disabled = 0
-     var i = 0
+
+    val t = z3.mkTrue
+    var disabled = 0
+    var i = 0
     //Some(result)
-     while(i<aux.length){
-       val Some(result) = model.evalAs[Boolean](aux(i))
-       if(result){
-         if(Some(result).equals(t)){
-           disabled= disabled + 1
-         }
-       }
-     }
-     /*
+    while (i < aux.length) {
+      val result = model.eval(aux(i))
+      if (result.eq(Some(true))) {
+        if (result.equals(t)) {
+          disabled = disabled + 1
+        }
+      }
+      i = i + 1
+    }
+  /*
     aux.count((x: Z3AST) => {
       val Some(result) = model.evalAs[Boolean](x)
       result && Some(result).eq(t)
     })*/
-     disabled
+    disabled
   }
 
 }
