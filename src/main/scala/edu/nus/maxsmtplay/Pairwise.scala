@@ -15,6 +15,6 @@ trait Pairwise extends AtMostOne {
     val pairs = allPairs(cs)
     val disjunctions = pairs.map({ case (a, b) => z3.mkOr(z3.mkNot(a), z3.mkNot(b))})
     val cnf = disjunctions.reduceLeft(z3.mkAnd(_, _))
-    solver.context.assertCnstr(cnf)
+    solver.assertCnstr(cnf)
   }
 }

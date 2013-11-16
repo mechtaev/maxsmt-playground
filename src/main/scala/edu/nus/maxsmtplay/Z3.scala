@@ -16,4 +16,18 @@ trait Z3 {
     z3.delete()
   }
 
+  def printAST(ast: Z3AST) = {
+    print(z3.astToString(ast))
+  }
+
+  def printlnAST(ast: Z3AST) = {
+    println(z3.astToString(ast))
+  }
+
+  def assertAssumptions(constraints: List[Z3AST]): List[(Z3AST, Z3AST)] = {
+    val pairs = constraints.map(c => (c, z3.mkFreshConst("a", z3.mkBoolSort)))
+    pairs.map({case (c, a) => solver.assertCnstr(z3.mkOr(c, a))})
+    pairs
+  }
+
 }

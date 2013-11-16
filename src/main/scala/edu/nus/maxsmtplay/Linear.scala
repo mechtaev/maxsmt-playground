@@ -8,16 +8,20 @@ import z3.scala.dsl._
 trait Linear extends MaxSMT {
   this: Z3 with AtMostK =>
 
-  override def solve(soft: List[Z3AST], hard: List[Z3AST]): Int = {
+  override def solve(soft: List[Z3AST], hard: List[Z3AST]): List[Z3AST] = {
     println("in linear")
     hard.map((c: Z3AST) => solver.assertCnstr(c))
     val Some(sat) = solver.check()
     if (!sat) {
-      return -1
+      println("result: " + -1)
+      return List()
     }
 
-    if (soft.size == 0)
-      return 0 //nothing to be done
+    if (soft.size == 0) {
+            println("result: " + 0)
+      return List()
+
+    }
     var aux = soft.map(c => (z3.mkFreshConst("k", z3.mkBoolSort)))
     var softAndAux = soft.zip(aux)
     //assert soft and aux:
@@ -36,7 +40,8 @@ trait Linear extends MaxSMT {
       val model = resultAndModel._2
       if (!result) {
         println("unsat")
-        return (soft.size - k - 1) // formula was unsat
+        println("result: " + (soft.size - k - 1))
+        return List()
       }
       //aux.map({ ast => println("aux:"+z3.astToString(ast)) })
       val numDisabled = getNumDisabledSoftConstraint(model, aux)
@@ -46,12 +51,16 @@ trait Linear extends MaxSMT {
      model.delete
       println("sat")
       k = numDisabled
-      if (k == 0)
-        return soft.size
+      if (k == 0) {
+        println("result: " + soft.size)
+        return List()
+      }
       k = k - 1
     }
+    
+    println("result: " + 0)
 
-    0
+    List()
   }
   /**
    * Return the number of soft-constraints that were disabled by the given model.
