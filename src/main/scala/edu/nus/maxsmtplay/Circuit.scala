@@ -53,7 +53,7 @@ trait Circuit extends AtMostK {
     var numBits = 1
     while (numIns > 1) {
       val (retList, newNumIns) = mkAdderPairs(tempList, numIns, numBits)
-      println("newNumIns: " + newNumIns)
+//      println("newNumIns: " + newNumIns)
       numIns = newNumIns
       numBits = numBits + 1
       tempList = retList
@@ -71,7 +71,7 @@ trait Circuit extends AtMostK {
     val outNumIns = half(numIns)
     
     while (index < numIns / 2) {
-      println("numBits:" + numBits)
+//      println("numBits:" + numBits)
       val result = mkAdder(input, input.drop(numBits), numBits)
       output = result
       inCopy = inCopy ++ in

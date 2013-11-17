@@ -12,15 +12,15 @@ object Driver {
     // Initialize solver
     val solver = new FileDriver 
       //with Linear with Circuit with Z3
-      with FuMalik with Pairwise with Z3
-      //with FastDiag with Z3
+      //with FuMalik with Pairwise with Z3
+      with FastDiag with Z3
     solver.init()
 
     val file = new File(".").getAbsolutePath() + "/benchmarks/ex.smt"
     val maxsat = solver.solveFromFile(file)
     solver.printConstraints(maxsat)
 
-    // delete solver:
+    // Delete solver:
     solver.delete()
   }
 

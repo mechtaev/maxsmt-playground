@@ -20,7 +20,7 @@ trait FastDiag extends MaxSMT {
     val hardAssumptions = assertAssumptions(hard)
     val hardAux = hardAssumptions.map(_._2)
     val mcs = fastDiag(softAux ++ hardAux, softAux, false)
-    softAssumptions.filter({case (s, a) => !mcs.contains(a)}).map(_._1)
+    softAssumptions.filter({case (s, a) => !mcs.contains(a)}).map(_._1) ++ hard
   }
 
   private def fastDiag(r: List[Z3AST], t: List[Z3AST], hasD: Boolean): List[Z3AST] = {

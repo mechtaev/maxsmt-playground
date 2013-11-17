@@ -11,65 +11,56 @@ trait Linear extends MaxSMT {
   override def solve(soft: List[Z3AST], hard: List[Z3AST]): List[Z3AST] = {
     hard.map((c: Z3AST) => solver.assertCnstr(c))
     val Some(sat) = solver.check()
-    println("checking whether hard constraints are satisfiable...")
     if (!sat) {
-      println("result: " + -1)
-      return List()
+      throw new Exception("Hard constraints are not satisfiable")
     }
-
     if (soft.size == 0) {
-      println("result: " + 0)
-      return List()
-
+      return hard
     }
-    var aux = assertAssumptions(soft).map(_._2)
+    var assumptions = assertAssumptions(soft)
+    var aux = assumptions.map(_._2)
+    var result = List[Z3AST]()
 
     var k = soft.size - 1
     while (true) {
-      println("checking whether at-most " + k + " soft-constraints can be ignored.")
       atMostK(aux, k)
-      val Some(result) = solver.check()
-      if (!result) {
-        println("unsat")
-        println("result: " + (soft.size - k - 1))
-        return List()
+      val Some(sat) = solver.check()
+      if (!sat) {
+        //removing (soft.size - k - 1) constraints
+        return hard ++ result
       }
       val numDisabled = getNumDisabledSoftConstraint(aux)
-      println("number of disabled:" + numDisabled)
       if (numDisabled > k)
         throw new Exception("Number of disabled constraints is more than k")
-      println("sat")
       k = numDisabled
       if (k == 0) {
-        println("result: " + soft.size)
-        return List()
+        return hard ++ soft
       }
       k = k - 1
+
+      val model = solver.getModel()
+      result = assumptions.filter({
+        case (s, a) => {
+          val Some(value) = model.eval(a)
+          value.equals(z3.mkFalse)
+        }
+      }).map(_._1)
     }
 
-    println("result: " + 0)
+    assert(false)
     List()
   }
+
   /**
     * Return the number of soft-constraints that were disabled by the given model.
     * A soft-constraint was disabled if the associated auxiliary variable was assigned to true.
     */
   def getNumDisabledSoftConstraint(aux: List[Z3AST]): Int = {
     val model = solver.getModel()
-    val t = z3.mkTrue
-    var disabled = 0
-    var i = 0
-    while (i < aux.length) {
-      val Some(result) = model.eval(aux(i))
-      print(aux(i))
-      print("->")
-      printlnAST(result)
-      if (result.equals(t)) {
-        disabled = disabled + 1
-      }
-      i = i + 1
-    }
-    disabled
+    aux.filter(a => {
+      val Some(result) = model.eval(a)
+      result.equals(z3.mkTrue)
+    }).size
   }
 
 }

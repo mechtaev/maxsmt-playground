@@ -21,7 +21,7 @@ trait FuMalik extends MaxSMT {
     hard.map((c: Z3AST) => solver.assertCnstr(c))
     val Some(sat) = solver.check()
     if (!sat) {
-      sys.exit(0)
+      throw new Exception("Hard constraints are not satisfiable")
     }
     // saving soft * aux * (orig * blocks)
     var assumptions = assertAssumptions(soft).map({
@@ -61,7 +61,7 @@ trait FuMalik extends MaxSMT {
       }
     })
     //print(z3.modelToString(solver.getModel()))
-    return result.map({case (_, _, (orig, _)) => orig})
+    result.map({case (_, _, (orig, _)) => orig}) ++ hard
   }
 
 }
