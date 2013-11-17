@@ -30,4 +30,10 @@ trait Z3 {
     pairs
   }
 
+  // Useful for debugging
+  def printASTList(label: String, astList: List[Z3AST]) = {
+    print(label + ": ")
+    astList.map(a => {printAST(a); print(" ")})
+    println()
+  }
 }

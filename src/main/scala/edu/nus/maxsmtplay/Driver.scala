@@ -18,7 +18,6 @@ object Driver {
 
     val file = new File(".").getAbsolutePath() + "/benchmarks/ex.smt"
     val maxsat = solver.solveFromFile(file)
-    println("Result:")
     solver.printConstraints(maxsat)
 
     // delete solver:

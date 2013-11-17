@@ -19,40 +19,22 @@ trait FastDiag extends MaxSMT {
     val softAux = softAssumptions.map(_._2)
     val hardAssumptions = assertAssumptions(hard)
     val hardAux = hardAssumptions.map(_._2)
-    (softAssumptions ++ hardAssumptions).map({case (a, b) => {
-      printAST(b)
-      print(" -> ")
-      printlnAST(a)
-    }})
-    println("---------------------------")
     val mcs = fastDiag(softAux ++ hardAux, softAux, false)
-    println("---------------------------")
     softAssumptions.filter({case (s, a) => !mcs.contains(a)}).map(_._1)
   }
 
   def fastDiag(r: List[Z3AST], t: List[Z3AST], hasD: Boolean): List[Z3AST] = {
     val Some(sat) = solver.checkAssumptions(r.map(z3.mkNot):_*)
-    print("R:" )
-    r.map(a => {printAST(a); print(" ")})
-    println()
-    print("T:")
-    r.map(a => {printAST(a); print(" ")})
-    println()
-    println("checking R ... " + sat)
     if (hasD && sat) 
       return List()
     if (t.size == 1)
       return t
     val m = t.size / 2
-    val (tLeft, tRight) = (t.slice(0, m), t.slice(m+1, t.size))
-    val rMinusTLeft = r.filter((ast: Z3AST) => tLeft.contains(ast))
+    val (tLeft, tRight) = (t.slice(0, m-1), t.slice(m, t.size))
+    val rMinusTLeft = r.filter((ast: Z3AST) => !tLeft.contains(ast))
     val dRight = fastDiag(rMinusTLeft, tRight, tLeft.size != 0)
-    val rMinusDRight = r.filter((ast: Z3AST) => dRight.contains(ast))
+    val rMinusDRight = r.filter((ast: Z3AST) => !dRight.contains(ast))
     val dLeft = fastDiag(rMinusDRight, tLeft, dRight.size != 0)
-    print("left:  ")
-    dLeft.map(printlnAST)
-    print("right:")
-    dRight.map(printlnAST)
     dLeft ++ dRight
   }
 
