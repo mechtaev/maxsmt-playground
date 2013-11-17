@@ -34,8 +34,7 @@ trait Linear extends MaxSMT {
         println("result: " + (soft.size - k - 1))
         return List()
       }
-      val model = solver.getModel()
-      val numDisabled = getNumDisabledSoftConstraint(model, aux)
+      val numDisabled = getNumDisabledSoftConstraint(aux)
       println("number of disabled:" + numDisabled)
       if (numDisabled > k)
         throw new Exception("Number of disabled constraints is more than k")
@@ -55,8 +54,8 @@ trait Linear extends MaxSMT {
     * Return the number of soft-constraints that were disabled by the given model.
     * A soft-constraint was disabled if the associated auxiliary variable was assigned to true.
     */
-  def getNumDisabledSoftConstraint(model: Z3Model, aux: List[Z3AST]): Int = {
-
+  def getNumDisabledSoftConstraint(aux: List[Z3AST]): Int = {
+    val model = solver.getModel()
     val t = z3.mkTrue
     var disabled = 0
     var i = 0

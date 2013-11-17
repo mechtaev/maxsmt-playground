@@ -23,7 +23,7 @@ trait FastDiag extends MaxSMT {
     softAssumptions.filter({case (s, a) => !mcs.contains(a)}).map(_._1)
   }
 
-  def fastDiag(r: List[Z3AST], t: List[Z3AST], hasD: Boolean): List[Z3AST] = {
+  private def fastDiag(r: List[Z3AST], t: List[Z3AST], hasD: Boolean): List[Z3AST] = {
     val Some(sat) = solver.checkAssumptions(r.map(z3.mkNot):_*)
     if (hasD && sat) 
       return List()

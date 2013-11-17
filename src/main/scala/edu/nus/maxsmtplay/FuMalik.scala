@@ -23,34 +23,45 @@ trait FuMalik extends MaxSMT {
     if (!sat) {
       sys.exit(0)
     }
-    var assumptions = assertAssumptions(soft)
-    var count = 0
+    // saving soft * aux * (orig * blocks)
+    var assumptions = assertAssumptions(soft).map({
+      case (s, a) => (s, a, (s, List[Z3AST]()))
+    })
     breakable {
       while(true) {
         var blockVars = List[Z3AST]()
-        val assumptionsAndSwitches = assumptions.map({case (s, a) => (s, a, z3.mkNot(a))})
-        val Some(sat) = solver.checkAssumptions(assumptionsAndSwitches.map(_._3):_*)
+        val assumptionsAndSwitches = assumptions.map({case (s, a, ob) => (s, a, ob, z3.mkNot(a))})
+        val Some(sat) = solver.checkAssumptions(assumptionsAndSwitches.map(_._4):_*)
         if (sat) break()
         val core = solver.getUnsatCore().toList
-        assumptions = assumptionsAndSwitches.map({case (soft, aux, assumption) =>
-          if (core.contains(assumption)) {
-            val blockVar = z3.mkFreshBoolConst("b")
-            blockVars = blockVar :: blockVars
-            val newSoft = z3.mkOr(soft, blockVar)
-            assertAssumptions(List(newSoft)).head
-          } else (soft, aux)})
+        assumptions = assumptionsAndSwitches.map({
+          case (soft, aux, (orig, blocks), assumption) =>
+            if (core.contains(assumption)) {
+              val blockVar = z3.mkFreshBoolConst("b")
+              blockVars = blockVar :: blockVars
+              val newSoft = z3.mkOr(soft, blockVar)
+              val newAux = assertAssumptions(List(newSoft)) match {
+                case List((_, a)) => a
+              }
+              val newBlocks = blockVar :: blocks
+              (newSoft, newAux, (orig, newBlocks))
+          } else (soft, aux, (orig, blocks))})
         atMostOne(blockVars)
-        count = count + 1
       }
     }
 
-
-
-
-    println("FuMalik return: " + (soft.size - count))
-    print(z3.modelToString(solver.getModel()))
-    //TODO return constraints
-    return List()
+    val model = solver.getModel()
+    val result = assumptions.filter({
+      case (_, _, (_, blocks)) => {
+        val evalList = blocks.map(b => {
+          val Some(result) = model.eval(b)
+          result.equals(z3.mkTrue)
+        })
+        !evalList.foldLeft(false)(_ || _)
+      }
+    })
+    //print(z3.modelToString(solver.getModel()))
+    return result.map({case (_, _, (orig, _)) => orig})
   }
 
 }
