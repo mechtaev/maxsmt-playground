@@ -57,7 +57,6 @@ trait FastDiag extends MaxSMT {
       arg match {
         case First(rp, rm, t, hasD) => {
           val r = rp.filter((ast: Z3AST) => !rm.contains(ast))
-          print("1")
           val Some(sat) = solver.checkAssumptions(r.map(z3.mkNot):_*)
           if (hasD && sat) results.push(List())
           else if (t.size == 1) results.push(t)
@@ -74,7 +73,6 @@ trait FastDiag extends MaxSMT {
           val hasD = (dRight.size != 0)
           val rm = dRight
           val r = rp.filter((ast: Z3AST) => !rm.contains(ast))
-          print("2")
           val Some(sat) = solver.checkAssumptions(r.map(z3.mkNot):_*)
           if (hasD && sat) results.push(List())
           else if (t.size == 1) results.push(t)

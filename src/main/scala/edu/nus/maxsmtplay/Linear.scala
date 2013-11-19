@@ -5,15 +5,15 @@ import z3.scala.dsl._
 /**
   * Implementation of linear algorithm
   */
-trait Linear extends MaxSMT {
+abstract class Linear(start: Option[Int]) extends MaxSMT {
   this: Z3 with AtMostK =>
 
   override def solve(soft: List[Z3AST], hard: List[Z3AST]): List[Z3AST] = {
     hard.map((c: Z3AST) => solver.assertCnstr(c))
-    val Some(sat) = solver.check()
-    if (!sat) {
-      throw new Exception("Hard constraints are not satisfiable")
-    }
+    // val Some(sat) = solver.check()
+    // if (!sat) {
+    //   throw new Exception("Hard constraints are not satisfiable")
+    // }
     if (soft.size == 0) {
       return hard
     }
@@ -21,7 +21,10 @@ trait Linear extends MaxSMT {
     var aux = assumptions.map(_._2)
     var result = List[Z3AST]()
 
-    var k = soft.size - 1
+    var k = start match {
+      case None => soft.size - 1
+      case Some(v) => v
+    }
     while (true) {
       atMostK(aux, k)
       val Some(sat) = solver.check()
