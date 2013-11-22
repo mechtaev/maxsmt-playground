@@ -45,10 +45,12 @@ object Driver {
     }
     val benchmarks =
       ("ex.smt",             5) ::
-      ("repair-cubes.smt",   1358) ::
-      ("repair-square.smt",  631) ::
+      ("repair-cubes-2.smt",   1358) ::
+      ("repair-square-2.smt",  631) ::
+      ("pigeon-hole-5.smt", 70) ::
       ("pigeon-hole-10.smt", 240) ::
-      ("repair-linear.smt",  2885) :: 
+      ("pigeon-hole-20.smt", 880) ::
+      ("repair-linear-2.smt",  2885) :: 
         List()
     val drivers =
       new BenchmarkDriver(
@@ -64,8 +66,8 @@ object Driver {
         "Linear 5", 
         new Linear(Some(5)) with Circuit with Z3 with Printer with Verifier) ::
       new BenchmarkDriver(
-        "Fast-Diag", 
-        new FastDiag with Z3 with Printer with Verifier) ::
+         "Fast-Diag", 
+         new FastDiag with Z3 with Printer with Verifier) ::
         List()
     benchmarks.map({case (f, a) => drivers.map(d => {
       d.init()

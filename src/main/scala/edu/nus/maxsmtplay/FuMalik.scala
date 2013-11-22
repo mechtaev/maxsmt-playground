@@ -36,7 +36,7 @@ abstract class FuMalik extends MaxSMT with Printer {
           assumptions.map({case ((s, a), ob) => ((s, a), ob, z3.mkNot(a))})
         //printConstraints("Soft", assumptions.map({case ((s, a), ob) => z3.mkOr(a, s)}))
         //why I should do it here?
-        assumptions.map({case ((s, a), _) => solver.assertCnstr(z3.mkOr(s, a))})
+        //assumptions.map({case ((s, a), _) => solver.assertCnstr(z3.mkOr(s, a))})
         val Some(sat) = solver.checkAssumptions(assumptionsAndSwitches.map(_._3):_*)
         if (sat) break()
         iter += 1
@@ -63,9 +63,27 @@ abstract class FuMalik extends MaxSMT with Printer {
             }
           }
         })
+
         writeLog("fumalik-core", coreLog.map({c => c.toString + "\n"}).reduceLeft(_ + _))
 
+        
+
+        //println("After assumptions: " + solver.getAssertions().size)
+
         atMostOne(blockVars)
+
+        assumptions.map({case ((s, a), _) => solver.assertCnstr(z3.mkOr(s, a))})
+
+        //println("After blockVars: " + solver.getAssertions().size)
+
+
+        //val x = z3.mkFreshBoolConst("x")
+        //solver.assertCnstr(z3.mkFreshBoolConst("x"))
+
+        // for( a <- 1 to 100){
+        //    val x = z3.mkFreshBoolConst("x")
+        //   solver.assertCnstr(x)
+        // }
       }
     }
     assert(solver.isModelAvailable)
