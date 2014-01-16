@@ -15,7 +15,6 @@ object Driver {
 
   def test() {
     // Initialize solver
-    //FIXME solver loops
     val solver =
       // new Linear(Some(10)) with Circuit with Z3 with Printer with Verifier
       new FuMalik with Circuit with Z3 with Printer with Verifier
@@ -28,15 +27,13 @@ object Driver {
     println(filePath)
     val maxsat = solver.solveFromFile(filePath)
 
-    //solver.printConstraints("" + maxsat.size + " constraints:", maxsat)
+    solver.printConstraints("" + maxsat.size + " constraints:", maxsat)
 
     println("verifying...")
     solver.checkSat(maxsat) match {
       case false => println("ERROR")
       case true => println("OK")
     }
-
-    solver.printConstraints("constraints:", maxsat)
 
     // Delete:
     solver.delete()

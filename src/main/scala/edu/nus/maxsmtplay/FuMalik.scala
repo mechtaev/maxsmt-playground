@@ -66,25 +66,9 @@ abstract class FuMalik extends MaxSMT with Printer {
 
         writeLog("fumalik-core", coreLog.map({c => c.toString + "\n"}).reduceLeft(_ + _))
 
-        //println("After assumptions: " + solver.getAssertions().size)
-
         atMostOne(blockVars)
-
-        assumptions.map({case ((s, a), _) => solver.add(z3.mkOr(s, a))})
-
-        //println("After blockVars: " + solver.getAssertions().size)
-
-
-        //val x = z3.mkFreshBoolConst("x")
-        //solver.add(z3.mkFreshBoolConst("x"))
-
-        // for( a <- 1 to 100){
-        //    val x = z3.mkFreshBoolConst("x")
-        //   solver.add(x)
-        // }
       }
     }
-    //assert(solver.isModelAvailable)
     val model = solver.getModel()
     val result = assumptions.filter({
       case (_, (_, blocks)) => {
