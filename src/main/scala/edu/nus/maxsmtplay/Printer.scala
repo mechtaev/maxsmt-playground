@@ -1,12 +1,12 @@
 package edu.nus.maxsmtplay
 
-import z3.scala._
+import com.microsoft.z3._
 import java.io._
 
 trait Printer {
   this: Z3 =>
 
-  def printConstraints(label: String, astList: List[Z3AST]) = {
+  def printConstraints(label: String, astList: List[BoolExpr]) = {
     println(label + ": ")
     astList.map(println)
   }

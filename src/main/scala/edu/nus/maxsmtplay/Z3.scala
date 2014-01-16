@@ -1,24 +1,26 @@
 package edu.nus.maxsmtplay
 
-import z3.scala._
+import com.microsoft.z3._
 
 trait Z3 {
 
-  var z3: Z3Context = null
-  var solver: Z3Solver = null
+  var z3: Context = null
+  var solver: Solver = null
 
   def init() = {
-    z3 = new Z3Context(new Z3Config("MODEL" -> true))
+    val cfg = new java.util.HashMap[String, String]()
+    cfg.put("MODEL", "true")
+    z3 = new Context(cfg)
     solver = z3.mkSolver
   }
 
   def delete() = {
-    z3.delete()
+    z3.dispose()
   }
 
-  def assertAssumptions(constraints: List[Z3AST]): List[(Z3AST, Z3AST)] = {
-    val pairs = constraints.map(c => (c, z3.mkFreshBoolConst("a")))
-    pairs.map({case (c, a) => solver.assertCnstr(z3.mkOr(c, a))})
+  def assertAssumptions(constraints: List[BoolExpr]): List[(BoolExpr, BoolExpr)] = {
+    val pairs = constraints.map(c => (c, z3.mkBoolConst(UniqueName.withPrefix("a"))))
+    pairs.map({case (c, a) => solver.add(z3.mkOr(c, a))})
     pairs
   }
 

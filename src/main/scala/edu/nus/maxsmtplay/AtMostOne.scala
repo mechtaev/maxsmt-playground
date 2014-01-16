@@ -1,9 +1,9 @@
 package edu.nus.maxsmtplay
 
-import z3.scala._
+import com.microsoft.z3._
 
 trait AtMostOne {
   
-  def atMostOne(cs: List[Z3AST])
+  def atMostOne(cs: List[BoolExpr])
 
 }

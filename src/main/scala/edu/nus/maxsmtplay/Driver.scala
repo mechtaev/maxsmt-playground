@@ -1,6 +1,6 @@
 package edu.nus.maxsmtplay
 
-import z3.scala._
+import com.microsoft.z3._
 import java.io.File
 
 /**
@@ -9,30 +9,34 @@ import java.io.File
 object Driver {
 
   def main(args: Array[String]): Unit = {
-    //test()
+    // test()
     executeBenchmarks()
   }
 
   def test() {
-
-
     // Initialize solver
+    //FIXME solver loops
     val solver =
-      //new Linear(Some(10)) with Circuit with Z3 with Printer with Verifier
+      // new Linear(Some(10)) with Circuit with Z3 with Printer with Verifier
       new FuMalik with Circuit with Z3 with Printer with Verifier
-      //new FuMalik with Pairwise with Z3 with Printer with Verifier
-      //new FastDiag with Z3 with Printer with Verifier
+      // new FuMalik with Pairwise with Z3 with Printer with Verifier
+      // new FastDiag with Z3 with Printer with Verifier
+    println("init...")
     solver.init()
 
-    val filePath = new File("benchmarks/repair-linear.smt").getAbsolutePath()
+    val filePath = new File("benchmarks/ex.smt").getAbsolutePath()
+    println(filePath)
     val maxsat = solver.solveFromFile(filePath)
 
     //solver.printConstraints("" + maxsat.size + " constraints:", maxsat)
 
+    println("verifying...")
     solver.checkSat(maxsat) match {
       case false => println("ERROR")
       case true => println("OK")
     }
+
+    solver.printConstraints("constraints:", maxsat)
 
     // Delete:
     solver.delete()
@@ -44,21 +48,21 @@ object Driver {
       new File("benchmarks/" + f).getAbsolutePath()
     }
     val benchmarks =
-      ("ex.smt",             5) ::
-      ("repair-cubes-2.smt",   1358) ::
-      ("repair-square-2.smt",  631) ::
-      ("pigeon-hole-5.smt", 70) ::
-      ("pigeon-hole-10.smt", 240) ::
-      ("pigeon-hole-20.smt", 880) ::
-      ("repair-linear-2.smt",  2885) :: 
+      ("ex.smt"              , 5) ::
+      ("repair-cubes-2.smt"  , 1358) ::
+      ("repair-square-2.smt" , 631) ::
+      ("pigeon-hole-5.smt"   , 70) ::
+      ("pigeon-hole-10.smt"  , 240) ::
+      ("pigeon-hole-20.smt"  , 880) ::
+      ("repair-linear-2.smt" , 2885) ::
         List()
     val drivers =
       new BenchmarkDriver(
-        "Fu-Malik Pairwise",
-        new FuMalik with Pairwise with Z3 with Printer with Verifier) ::
+       "Fu-Malik Pairwise",
+       new FuMalik with Pairwise with Z3 with Printer with Verifier) ::
       new BenchmarkDriver(
-        "Fu-Malik Circuit",
-        new FuMalik with Circuit with Z3 with Printer with Verifier) ::
+       "Fu-Malik Circuit",
+       new FuMalik with Circuit with Z3 with Printer with Verifier) ::
       // new BenchmarkDriver(
       //   "Linear",
       //   new Linear(None) with Circuit with Z3 with Printer with Verifier) ::

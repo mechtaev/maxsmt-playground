@@ -1,6 +1,6 @@
 package edu.nus.maxsmtplay
 
-import z3.scala._
+import com.microsoft.z3._
 import scalaz._
 
 /**
@@ -9,7 +9,7 @@ import scalaz._
 trait Circuit extends AtMostK {
   this: Z3 =>
 
-  override def atMostK(constraints: List[Z3AST], k: Int): Unit = {
+  override def atMostK(constraints: List[BoolExpr], k: Int): Unit = {
     val n = constraints.length
     if (k >= n || n <= 1)
       return
@@ -17,7 +17,7 @@ trait Circuit extends AtMostK {
     assertLEK(counterBits, k)
   }
 
-  def assertLEK(value: List[Z3AST], k: Int): Unit = {
+  def assertLEK(value: List[BoolExpr], k: Int): Unit = {
     var notVal = z3.mkNot(value(0))
     var out = notVal
     if (getBit(k, 0))
@@ -39,7 +39,7 @@ trait Circuit extends AtMostK {
     }
     //println("at-most-k:")
     //printlnAST(out)
-    solver.assertCnstr(out)
+    solver.add(out)
   }
 
   def getBit(value: Int, idx: Int): Boolean = {
@@ -47,7 +47,7 @@ trait Circuit extends AtMostK {
     (value & mask) != 0
   }
 
-  def mkCounterCircuit(cs: List[Z3AST]): List[Z3AST] = {
+  def mkCounterCircuit(cs: List[BoolExpr]): List[BoolExpr] = {
     var numIns = cs.length
     var tempList = cs
     var numBits = 1
@@ -61,10 +61,10 @@ trait Circuit extends AtMostK {
     tempList
   }
 
-  def mkAdderPairs(in: List[Z3AST], numIns: Int, numBits: Int): (List[Z3AST], Int) = {
-    var output = List[Z3AST]()
-    var outCopy = List[Z3AST]()
-    var inCopy = List[Z3AST]()
+  def mkAdderPairs(in: List[BoolExpr], numIns: Int, numBits: Int): (List[BoolExpr], Int) = {
+    var output = List[BoolExpr]()
+    var outCopy = List[BoolExpr]()
+    var inCopy = List[BoolExpr]()
     var input = in
     var index = 0
     val outNumBits = numBits + 1
@@ -95,10 +95,10 @@ trait Circuit extends AtMostK {
   /**
     * Create an adder of two bit arrays
     */
-  def mkAdder(in1: List[Z3AST], in2: List[Z3AST], numBits: Int): List[Z3AST] = {
+  def mkAdder(in1: List[BoolExpr], in2: List[BoolExpr], numBits: Int): List[BoolExpr] = {
     var cin = z3.mkFalse()
     var index = 0
-    var result = List[Z3AST]()
+    var result = List[BoolExpr]()
     while (index < numBits) {
       val (carryout, out) = mkFullAdder(in1(index), in2(index), cin)
       result = result ++ List(out)
@@ -113,14 +113,14 @@ trait Circuit extends AtMostK {
     * Constructs a full adder for two bits
     * return a pair of (cout, out)
     */
-  def mkFullAdder(in1: Z3AST, in2: Z3AST, cin: Z3AST): (Z3AST, Z3AST) = {
+  def mkFullAdder(in1: BoolExpr, in2: BoolExpr, cin: BoolExpr): (BoolExpr, BoolExpr) = {
     val cout = 
       mkTernaryOr(z3.mkAnd(in1, in2), z3.mkAnd(in1, cin), z3.mkAnd(in2, cin))
     val out = z3.mkXor(z3.mkXor(in1, in2), cin)
     (cout, out)
   }
 
-  def mkTernaryOr(in1: Z3AST, in2: Z3AST, in3: Z3AST): Z3AST = {
+  def mkTernaryOr(in1: BoolExpr, in2: BoolExpr, in3: BoolExpr): BoolExpr = {
     z3.mkOr(in1, in2, in3)
   }
 

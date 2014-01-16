@@ -1,6 +1,6 @@
 package edu.nus.maxsmtplay
 
-import z3.scala._
+import com.microsoft.z3._
 import org.scalatest._
 
 class TestZ3 extends FlatSpec with Matchers {
@@ -11,9 +11,9 @@ class TestZ3 extends FlatSpec with Matchers {
         init()
         val intSort = z3.mkIntSort
 
-        val x: Z3AST = z3.mkConst(z3.mkStringSymbol("x"), intSort)
-        val y: Z3AST = z3.mkConst(z3.mkStringSymbol("y"), intSort)
-        val z: Z3AST = z3.mkConst(z3.mkStringSymbol("z"), intSort)
+        val x: BoolExpr = z3.mkConst(z3.mkStringSymbol("x"), intSort)
+        val y: BoolExpr = z3.mkConst(z3.mkStringSymbol("y"), intSort)
+        val z: BoolExpr = z3.mkConst(z3.mkStringSymbol("z"), intSort)
         val c0 = z3.mkInt(0, intSort)
         val c1 = z3.mkInt(1, intSort)
         val c2 = z3.mkInt(2, intSort)
@@ -28,7 +28,7 @@ class TestZ3 extends FlatSpec with Matchers {
         val cs6 = z3.mkLE(y, cm1)
         val cs7 = z3.mkEq(z, z3.mkAdd(x, y))
 
-        solver.assertCnstr(z3.mkAnd(cs1, cs2, cs3, cs4, cs5, cs6, cs7))
+        solver.add(z3.mkAnd(cs1, cs2, cs3, cs4, cs5, cs6, cs7))
         val Some(result) = solver.check()
         delete()
         result

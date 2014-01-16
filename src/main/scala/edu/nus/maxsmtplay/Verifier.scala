@@ -1,15 +1,15 @@
 package edu.nus.maxsmtplay
 
-import z3.scala._
+import com.microsoft.z3._
 
 trait Verifier {
   this: Z3 =>
 
-  def checkSat(constraints: List[Z3AST]): Boolean = {
+  def checkSat(constraints: List[BoolExpr]): Boolean = {
     solver.reset()
-    solver.assertCnstr(z3.mkAnd(constraints:_*))
-    val Some(result) = solver.check()
-    result
+    solver.add(z3.mkAnd(constraints:_*))
+    val result = solver.check()
+    (result == Status.SATISFIABLE)
   }
 
 }

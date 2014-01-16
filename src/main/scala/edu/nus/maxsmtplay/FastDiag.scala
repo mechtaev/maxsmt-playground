@@ -1,6 +1,6 @@
 package edu.nus.maxsmtplay
 
-import z3.scala._
+import com.microsoft.z3._
 import scala.collection.mutable.Stack
 
 /**
@@ -15,7 +15,7 @@ import scala.collection.mutable.Stack
 trait FastDiag extends MaxSMT {
   this: Z3 =>
 
-  override def solve(soft: List[Z3AST], hard: List[Z3AST]): List[Z3AST] = {
+  override def solve(soft: List[BoolExpr], hard: List[BoolExpr]): List[BoolExpr] = {
     val softAssumptions = assertAssumptions(soft)
     val softAux = softAssumptions.map(_._2)
     val hardAssumptions = assertAssumptions(hard)
@@ -24,30 +24,31 @@ trait FastDiag extends MaxSMT {
     softAssumptions.filter({case (s, a) => !mcs.contains(a)}).map(_._1) ++ hard
   }
 
-  private def fastDiagNaive(r: List[Z3AST], t: List[Z3AST], hasD: Boolean): List[Z3AST] = {
-    val Some(sat) = solver.checkAssumptions(r.map(z3.mkNot):_*)
+  private def fastDiagNaive(r: List[BoolExpr], t: List[BoolExpr], hasD: Boolean): List[BoolExpr] = {
+    val checkResult = solver.check(r.map(z3.mkNot):_*)
+    val sat = (checkResult == Status.SATISFIABLE)
     if (hasD && sat) 
       return List()
     if (t.size == 1)
       return t
     val m = t.size / 2
     val (tLeft, tRight) = (t.slice(0, m), t.slice(m, t.size))
-    val rMinusTLeft = r.filter((ast: Z3AST) => !tLeft.contains(ast))
+    val rMinusTLeft = r.filter((ast: BoolExpr) => !tLeft.contains(ast))
     val dRight = fastDiagNaive(rMinusTLeft, tRight, tLeft.size != 0)
-    val rMinusDRight = r.filter((ast: Z3AST) => !dRight.contains(ast))
+    val rMinusDRight = r.filter((ast: BoolExpr) => !dRight.contains(ast))
     val dLeft = fastDiagNaive(rMinusDRight, tLeft, dRight.size != 0)
     dLeft ++ dRight
   }
 
   sealed trait Part
-  case class First(rp: List[Z3AST], rm: List[Z3AST], t: List[Z3AST], hadD: Boolean) extends Part
-  case class Second(rp: List[Z3AST], t: List[Z3AST]) extends Part
+  case class First(rp: List[BoolExpr], rm: List[BoolExpr], t: List[BoolExpr], hadD: Boolean) extends Part
+  case class Second(rp: List[BoolExpr], t: List[BoolExpr]) extends Part
   case class Sum() extends Part
 
   val args = new Stack[Part]
-  val results = new Stack[List[Z3AST]]
+  val results = new Stack[List[BoolExpr]]
 
-  private def fastDiagOpt(r: List[Z3AST], t: List[Z3AST], hasD: Boolean): List[Z3AST] = {
+  private def fastDiagOpt(r: List[BoolExpr], t: List[BoolExpr], hasD: Boolean): List[BoolExpr] = {
     args.push(First(r, List(), t, hasD))
     var count = 0
     while(!args.isEmpty && count < 200) {
@@ -56,8 +57,9 @@ trait FastDiag extends MaxSMT {
       val arg = args.pop()
       arg match {
         case First(rp, rm, t, hasD) => {
-          val r = rp.filter((ast: Z3AST) => !rm.contains(ast))
-          val Some(sat) = solver.checkAssumptions(r.map(z3.mkNot):_*)
+          val r = rp.filter((ast: BoolExpr) => !rm.contains(ast))
+          val checkResult = solver.check(r.map(z3.mkNot):_*)
+          val sat = (checkResult == Status.SATISFIABLE)
           if (hasD && sat) results.push(List())
           else if (t.size == 1) results.push(t)
           else {
@@ -72,8 +74,9 @@ trait FastDiag extends MaxSMT {
           val dRight = results.top
           val hasD = (dRight.size != 0)
           val rm = dRight
-          val r = rp.filter((ast: Z3AST) => !rm.contains(ast))
-          val Some(sat) = solver.checkAssumptions(r.map(z3.mkNot):_*)
+          val r = rp.filter((ast: BoolExpr) => !rm.contains(ast))
+          val checkResult = solver.check(r.map(z3.mkNot):_*)
+          val sat = (checkResult == Status.SATISFIABLE)
           if (hasD && sat) results.push(List())
           else if (t.size == 1) results.push(t)
           else {

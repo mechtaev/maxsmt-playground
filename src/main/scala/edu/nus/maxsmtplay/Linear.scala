@@ -1,15 +1,15 @@
 package edu.nus.maxsmtplay
 
-import z3.scala._
-import z3.scala.dsl._
+import com.microsoft.z3._
+
 /**
   * Implementation of linear algorithm
   */
 abstract class Linear(start: Option[Int]) extends MaxSMT {
   this: Z3 with AtMostK =>
 
-  override def solve(soft: List[Z3AST], hard: List[Z3AST]): List[Z3AST] = {
-    hard.map((c: Z3AST) => solver.assertCnstr(c))
+  override def solve(soft: List[BoolExpr], hard: List[BoolExpr]): List[BoolExpr] = {
+    hard.map((c: BoolExpr) => solver.add(c))
     // val Some(sat) = solver.check()
     // if (!sat) {
     //   throw new Exception("Hard constraints are not satisfiable")
@@ -19,7 +19,7 @@ abstract class Linear(start: Option[Int]) extends MaxSMT {
     }
     var assumptions = assertAssumptions(soft)
     var aux = assumptions.map(_._2)
-    var result = List[Z3AST]()
+    var result = List[BoolExpr]()
 
     var k = start match {
       case None => soft.size - 1
@@ -27,7 +27,8 @@ abstract class Linear(start: Option[Int]) extends MaxSMT {
     }
     while (true) {
       atMostK(aux, k)
-      val Some(sat) = solver.check()
+      val checkResult = solver.check()
+      val sat = (checkResult == Status.SATISFIABLE)
       if (!sat) {
         //removing (soft.size - k - 1) constraints
         return hard ++ result
@@ -44,7 +45,7 @@ abstract class Linear(start: Option[Int]) extends MaxSMT {
       val model = solver.getModel()
       result = assumptions.filter({
         case (s, a) => {
-          val Some(value) = model.eval(a)
+          val value = model.eval(a, true)
           value.equals(z3.mkFalse)
         }
       }).map(_._1)
@@ -58,10 +59,10 @@ abstract class Linear(start: Option[Int]) extends MaxSMT {
     * Return the number of soft-constraints that were disabled by the given model.
     * A soft-constraint was disabled if the associated auxiliary variable was assigned to true.
     */
-  def getNumDisabledSoftConstraint(aux: List[Z3AST]): Int = {
+  def getNumDisabledSoftConstraint(aux: List[BoolExpr]): Int = {
     val model = solver.getModel()
     aux.filter(a => {
-      val Some(result) = model.eval(a)
+      val result = model.eval(a, true)
       result.equals(z3.mkTrue)
     }).size
   }

@@ -1,6 +1,6 @@
 package edu.nus.maxsmtplay
 
-import z3.scala._
+import com.microsoft.z3._
 
 class BenchmarkDriver(name: String, solver: MaxSMT with Z3 with Printer with Verifier) {
 
@@ -19,7 +19,7 @@ class BenchmarkDriver(name: String, solver: MaxSMT with Z3 with Printer with Ver
     (result, ((System.nanoTime-s)/1e6).toInt)
   }
 
-  def solveBenchmark(filename: String): (List[Z3AST], Boolean, Int, Int, Int) = {
+  def solveBenchmark(filename: String): (List[BoolExpr], Boolean, Int, Int, Int) = {
     val ((maxsat, soft, hard), time) = measureTime(solver.solveFromFileAndGetSoftHard(filename))
     val consistent = solver.checkSat(maxsat)
     (maxsat, consistent, time, hard.size, hard.size + soft.size)

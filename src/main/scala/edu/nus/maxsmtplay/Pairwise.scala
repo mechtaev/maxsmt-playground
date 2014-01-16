@@ -1,12 +1,12 @@
 package edu.nus.maxsmtplay
 
-import z3.scala._
+import com.microsoft.z3._
 
 trait Pairwise extends AtMostOne {
   this: Z3 =>
 
-  override def atMostOne(cs: List[Z3AST]) = {
-    def allPairs(l: List[Z3AST]): List[(Z3AST, Z3AST)] = {
+  override def atMostOne(cs: List[BoolExpr]) = {
+    def allPairs(l: List[BoolExpr]): List[(BoolExpr, BoolExpr)] = {
       l match {
         case h :: t => t.map({ e => (h, e) }) ++ allPairs(t)
         case List() => List()
@@ -16,6 +16,6 @@ trait Pairwise extends AtMostOne {
     val disjunctions = pairs.map({ 
       case (a, b) => z3.mkOr(z3.mkNot(a), z3.mkNot(b)) 
     })
-    disjunctions.map(solver.assertCnstr)
+    disjunctions.map({ c => solver.add(c) })
   }
 }

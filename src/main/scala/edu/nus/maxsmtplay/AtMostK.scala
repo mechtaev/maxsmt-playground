@@ -1,15 +1,15 @@
 package edu.nus.maxsmtplay
 
-import z3.scala._
+import com.microsoft.z3._
 
 /**
  * Interface of AtMostK constraint
  */
 trait AtMostK extends AtMostOne {
 
-  def atMostK(cs: List[Z3AST], k:Int)
+  def atMostK(cs: List[BoolExpr], k:Int)
 
-  override def atMostOne(cs: List[Z3AST]) = {
+  override def atMostOne(cs: List[BoolExpr]) = {
     atMostK(cs, 1)
   }
 
