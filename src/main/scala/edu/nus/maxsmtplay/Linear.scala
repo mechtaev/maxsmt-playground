@@ -9,17 +9,27 @@ abstract class Linear(start: Option[Int]) extends MaxSMT {
   this: Z3 with AtMostK =>
 
   override def solve(soft: List[BoolExpr], hard: List[BoolExpr]): List[BoolExpr] = {
+    val (clauses, _) = solveAndGetModel(soft, hard)
+    clauses
+  }
+
+  override def solveAndGetModel(soft: List[BoolExpr], hard: List[BoolExpr]): (List[BoolExpr], Model) = {
     hard.map((c: BoolExpr) => solver.add(c))
+
+    //FIXME should I check satisfiability here?
     // val Some(sat) = solver.check()
     // if (!sat) {
     //   throw new Exception("Hard constraints are not satisfiable")
     // }
-    if (soft.size == 0) {
-      return hard
-    }
+
+    //FIXME does this check make sense?
+    // if (soft.size == 0) {
+    //   return hard
+    // }
     var assumptions = assertAssumptions(soft)
     var aux = assumptions.map(_._2)
     var result = List[BoolExpr]()
+    var model: Model = null
 
     var k = start match {
       case None => soft.size - 1
@@ -31,18 +41,20 @@ abstract class Linear(start: Option[Int]) extends MaxSMT {
       val sat = (checkResult == Status.SATISFIABLE)
       if (!sat) {
         //removing (soft.size - k - 1) constraints
-        return hard ++ result
+        //FIXME is model still available here?
+        return (hard ++ result, model)
       }
       val numDisabled = getNumDisabledSoftConstraint(aux)
       if (numDisabled > k)
         throw new Exception("Number of disabled constraints is more than k")
       k = numDisabled
       if (k == 0) {
-        return hard ++ soft
+        throw new Exception("This place we should not reach")
+        //return hard ++ soft
       }
       k = k - 1
 
-      val model = solver.getModel()
+      model = solver.getModel()
       result = assumptions.filter({
         case (s, a) => {
           val value = model.eval(a, true)
@@ -51,8 +63,7 @@ abstract class Linear(start: Option[Int]) extends MaxSMT {
       }).map(_._1)
     }
 
-    assert(false)
-    List()
+    ???
   }
 
   /**

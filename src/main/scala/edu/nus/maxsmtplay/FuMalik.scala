@@ -16,34 +16,34 @@ abstract class FuMalik extends MaxSMT with Printer {
   this: AtMostOne with Z3 =>
 
   override def solve(soft: List[BoolExpr], hard: List[BoolExpr]): List[BoolExpr] = {
+    val (clauses, _) = solveAndGetModel(soft, hard)
+    clauses
+  }
+
+  override def solveAndGetModel(soft: List[BoolExpr], hard: List[BoolExpr]): (List[BoolExpr], Model) = {
     //hard constraints
     hard.map((c: BoolExpr) => solver.add(c))
+    
+    //FIXME should I check formula before solving?
     // val Some(sat) = solver.check()
     // if (!sat) {
     //   throw new Exception("Hard constraints are not satisfiable")
     // }
+
     // saving (soft * aux) * (orig * blocks)
     var assumptions = assertAssumptions(soft).map({
       case (s, a) => ((s, a), (s, List[BoolExpr]()))
     })
-    var iter = 0
     breakable {
       while(true) {
-        println("Iter " + iter)
         var blockVars = List[BoolExpr]()
         val assumptionsAndSwitches = 
           assumptions.map({case ((s, a), ob) => ((s, a), ob, z3.mkNot(a))})
-        //printConstraints("Soft", assumptions.map({case ((s, a), ob) => z3.mkOr(a, s)}))
-        //why I should do it here?
         assumptions.map({case ((s, a), _) => solver.add(z3.mkOr(s, a))})
         val checkResult = solver.check(assumptionsAndSwitches.map(_._3):_*)
         val sat = (checkResult == Status.SATISFIABLE)
         if (sat) break()
-        iter += 1
         val core = solver.getUnsatCore().toList
-        // println("Core size " + core.size)
-        // println("Core: ")
-        // println(core)
         var coreLog = List[BoolExpr]()
         assumptions = assumptionsAndSwitches.map({
           case ((soft, aux), (orig, oldBlocks), switch) => {
@@ -53,12 +53,9 @@ abstract class FuMalik extends MaxSMT with Printer {
               blockVars = blockVar :: blockVars
               val newSoft = z3.mkOr(soft, blockVar)
               val newAux = z3.mkBoolConst(UniqueName.withPrefix("a"))
-              //solver.add(z3.mkOr(newSoft, newAux))
-              //val newAssumption = assertAssumptions(List(newSoft)).head
               val newBlocks = blockVar :: oldBlocks
               ((newSoft, newAux), (orig, newBlocks))
             } else {
-              //solver.add(z3.mkOr(soft, aux))
               ((soft, aux), (orig, oldBlocks))
             }
           }
@@ -81,7 +78,7 @@ abstract class FuMalik extends MaxSMT with Printer {
       }
     })
     writeLog("fumalik-model", solver.getModel().toString())
-    result.map({case (_, (orig, _)) => orig}) ++ hard
+    (result.map({case (_, (orig, _)) => orig}) ++ hard, model)
   }
 
 }

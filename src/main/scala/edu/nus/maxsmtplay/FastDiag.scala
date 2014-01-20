@@ -16,12 +16,18 @@ trait FastDiag extends MaxSMT {
   this: Z3 =>
 
   override def solve(soft: List[BoolExpr], hard: List[BoolExpr]): List[BoolExpr] = {
+    val (clauses, _) = solveAndGetModel(soft, hard)
+    clauses
+  }
+
+  override def solveAndGetModel(soft: List[BoolExpr], hard: List[BoolExpr]): (List[BoolExpr], Model) = {
     val softAssumptions = assertAssumptions(soft)
     val softAux = softAssumptions.map(_._2)
     val hardAssumptions = assertAssumptions(hard)
     val hardAux = hardAssumptions.map(_._2)
     val mcs = fastDiagOpt(softAux ++ hardAux, softAux, false)
-    softAssumptions.filter({case (s, a) => !mcs.contains(a)}).map(_._1) ++ hard
+    //FIXME return model here
+    (softAssumptions.filter({case (s, a) => !mcs.contains(a)}).map(_._1) ++ hard, null)
   }
 
   private def fastDiagNaive(r: List[BoolExpr], t: List[BoolExpr], hasD: Boolean): List[BoolExpr] = {
@@ -68,7 +74,7 @@ trait FastDiag extends MaxSMT {
             args.push(Sum())
             args.push(Second(r, tLeft))
             args.push(First(r, tLeft, tRight, tLeft.size != 0))
-          }     
+          }
         }
         case Second(rp, t) => {
           val dRight = results.top

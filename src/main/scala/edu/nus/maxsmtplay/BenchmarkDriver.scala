@@ -2,7 +2,7 @@ package edu.nus.maxsmtplay
 
 import com.microsoft.z3._
 
-class BenchmarkDriver(name: String, solver: MaxSMT with Z3 with Printer with Verifier) {
+class BenchmarkDriver(name: String, solver: SolverTestUtils with Z3 with Printer with Verifier) {
 
   def init() = {
     solver.init()
