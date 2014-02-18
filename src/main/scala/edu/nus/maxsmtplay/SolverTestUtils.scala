@@ -12,7 +12,7 @@ trait SolverTestUtils extends MaxSMT {
     val hard = z3.getSMTLIBFormulas.toList
     val soft = z3.getSMTLIBAssumptions.toList
     println("solving...")
-    val maxsat = solve(soft, hard)
+    val Some(maxsat) = solve(soft, hard)
     maxsat
   }
 
@@ -20,7 +20,7 @@ trait SolverTestUtils extends MaxSMT {
     z3.parseSMTLIBFile(filename, null, null, null, null)
     val hard = z3.getSMTLIBFormulas().toList
     val soft = z3.getSMTLIBAssumptions().toList
-    val maxsat = solve(soft, hard)
+    val Some(maxsat) = solve(soft, hard)
     (maxsat, soft, hard)
   }
 

@@ -17,7 +17,7 @@ object Driver {
     // Initialize solver
     val solver =
       // new Linear(Some(10)) with Circuit with Z3 with Printer with Verifier
-      new FuMalik with Circuit with Z3 with Printer with Verifier with SolverTestUtils
+      new FuMalik(Some(5)) with Circuit with Z3 with Printer with Verifier with SolverTestUtils
       // new FuMalik with Pairwise with Z3 with Printer with Verifier
       // new FastDiag with Z3 with Printer with Verifier
     println("init...")
@@ -56,10 +56,10 @@ object Driver {
     val drivers =
       new BenchmarkDriver(
        "Fu-Malik Pairwise",
-       new FuMalik with Pairwise with Z3 with Printer with Verifier with SolverTestUtils) ::
+       new FuMalik(Some(5)) with Pairwise with Z3 with Printer with Verifier with SolverTestUtils) ::
       new BenchmarkDriver(
        "Fu-Malik Circuit",
-       new FuMalik with Circuit with Z3 with Printer with Verifier with SolverTestUtils) ::
+       new FuMalik(Some(5)) with Circuit with Z3 with Printer with Verifier with SolverTestUtils) ::
       // new BenchmarkDriver(
       //   "Linear",
       //   new Linear(None) with Circuit with Z3 with Printer with Verifier with SolverTest) ::

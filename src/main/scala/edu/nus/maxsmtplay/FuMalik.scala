@@ -12,15 +12,10 @@ import scala.util.control.Breaks._
   * Z. Fu and S. Malik, On solving the partial MAX-SAT problem, in International 
   * Conference on Theory and Applications of Satisfiability Testing, 2006.
   */
-abstract class FuMalik extends MaxSMT with Printer {
+abstract class FuMalik(bound: Option[Int]) extends MaxSMT with Printer {
   this: AtMostOne with Z3 =>
 
-  override def solve(soft: List[BoolExpr], hard: List[BoolExpr]): List[BoolExpr] = {
-    val (clauses, _) = solveAndGetModel(soft, hard)
-    clauses
-  }
-
-  override def solveAndGetModel(soft: List[BoolExpr], hard: List[BoolExpr]): (List[BoolExpr], Model) = {
+  override def solveAndGetModel(soft: List[BoolExpr], hard: List[BoolExpr]): Option[(List[BoolExpr], Model)] = {
     //hard constraints
     hard.map((c: BoolExpr) => solver.add(c))
     
@@ -34,6 +29,7 @@ abstract class FuMalik extends MaxSMT with Printer {
     var assumptions = assertAssumptions(soft).map({
       case (s, a) => ((s, a), (s, List[BoolExpr]()))
     })
+    var count = 0
     breakable {
       while(true) {
         var blockVars = List[BoolExpr]()
@@ -43,6 +39,11 @@ abstract class FuMalik extends MaxSMT with Printer {
         val checkResult = solver.check(assumptionsAndSwitches.map(_._3):_*)
         val sat = (checkResult == Status.SATISFIABLE)
         if (sat) break()
+        count = count + 1
+        bound match {
+          case Some(v) if count > v => return None
+          case _ => ()
+        }
         val core = solver.getUnsatCore().toList
         var coreLog = List[BoolExpr]()
         assumptions = assumptionsAndSwitches.map({
@@ -78,7 +79,7 @@ abstract class FuMalik extends MaxSMT with Printer {
       }
     })
     writeLog("fumalik-model", solver.getModel().toString())
-    (result.map({case (_, (orig, _)) => orig}) ++ hard, model)
+    Some((result.map({case (_, (orig, _)) => orig}) ++ hard, model))
   }
 
 }

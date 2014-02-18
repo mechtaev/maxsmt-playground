@@ -8,12 +8,8 @@ import com.microsoft.z3._
 abstract class Linear(start: Option[Int]) extends MaxSMT {
   this: Z3 with AtMostK =>
 
-  override def solve(soft: List[BoolExpr], hard: List[BoolExpr]): List[BoolExpr] = {
-    val (clauses, _) = solveAndGetModel(soft, hard)
-    clauses
-  }
-
-  override def solveAndGetModel(soft: List[BoolExpr], hard: List[BoolExpr]): (List[BoolExpr], Model) = {
+  //TODO case when we do not have any solution
+  override def solveAndGetModel(soft: List[BoolExpr], hard: List[BoolExpr]): Option[(List[BoolExpr], Model)] = {
     hard.map((c: BoolExpr) => solver.add(c))
 
     //FIXME should I check satisfiability here?
@@ -42,7 +38,7 @@ abstract class Linear(start: Option[Int]) extends MaxSMT {
       if (!sat) {
         //removing (soft.size - k - 1) constraints
         //FIXME is model still available here?
-        return (hard ++ result, model)
+        return Some((hard ++ result, model))
       }
       val numDisabled = getNumDisabledSoftConstraint(aux)
       if (numDisabled > k)
