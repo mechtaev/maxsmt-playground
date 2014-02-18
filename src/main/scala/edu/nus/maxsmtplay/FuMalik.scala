@@ -62,7 +62,7 @@ abstract class FuMalik(bound: Option[Int]) extends MaxSMT with Printer {
           }
         })
 
-        writeLog("fumalik-core", coreLog.map({c => c.toString + "\n"}).reduceLeft(_ + _))
+        //writeLog("fumalik-core", coreLog.map({c => c.toString + "\n"}).reduceLeft(_ + _))
 
         atMostOne(blockVars)
       }
