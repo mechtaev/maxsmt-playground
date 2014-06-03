@@ -7,9 +7,14 @@ trait Z3 {
   var z3: Context = null
   var solver: Solver = null
 
-  def init() = {
+  def init(timeout: Option[Int]) = {
     val cfg = new java.util.HashMap[String, String]()
-    cfg.put("MODEL", "true")
+    cfg.put("model", "true")
+    cfg.put("unsat_core", "true")
+    timeout match {
+      case Some(time) => cfg.put("timeout", time.toString)
+      case _ => ()
+    }
     z3 = new Context(cfg)
     solver = z3.mkSolver
   }

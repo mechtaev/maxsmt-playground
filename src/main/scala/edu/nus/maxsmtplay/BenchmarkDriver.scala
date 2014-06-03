@@ -4,8 +4,8 @@ import com.microsoft.z3._
 
 class BenchmarkDriver(name: String, solver: SolverTestUtils with Z3 with Printer with Verifier) {
 
-  def init() = {
-    solver.init()
+  def init(timeout: Option[Int]) = {
+    solver.init(timeout)
   }
 
   def delete() = {

@@ -21,7 +21,7 @@ object Driver {
       // new FuMalik with Pairwise with Z3 with Printer with Verifier
       // new FastDiag with Z3 with Printer with Verifier
     println("init...")
-    solver.init()
+    solver.init(None)
 
     val filePath = new File("benchmarks/ex.smt").getAbsolutePath()
     println(filePath)
@@ -71,7 +71,7 @@ object Driver {
          new FastDiag with Z3 with Printer with Verifier with SolverTestUtils) ::
         List()
     benchmarks.map({case (f, a) => drivers.map(d => {
-      d.init()
+      d.init(None)
       d.runAndPrint(path(f), a)
       d.delete()
     })})
