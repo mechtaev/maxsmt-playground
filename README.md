@@ -1,4 +1,4 @@
 maxsmt-playground
 =================
 
-Collection of MaxSMT solvers
+Collection of satisfiability solvers (SAT, MaxSAT, MCS) for Scala based on Z3 java API.
