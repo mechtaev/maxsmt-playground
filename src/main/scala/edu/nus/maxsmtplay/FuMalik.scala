@@ -15,9 +15,13 @@ import scala.util.control.Breaks._
 abstract class FuMalik(bound: Option[Int]) extends MaxSMT with Printer {
   this: AtMostOne with Z3 =>
 
+  var lastCores: List[Int] = Nil
+
   override def solveAndGetModel(soft: List[BoolExpr], hard: List[BoolExpr]): Option[(List[BoolExpr], Model)] = {
+    lastCores = Nil
     //hard constraints
     hard.map((c: BoolExpr) => solver.add(c))
+    // System.err.println("SOFT: " + soft.size)
     
     //FIXME should I check formula before solving?
     // val Some(sat) = solver.check()
@@ -45,6 +49,8 @@ abstract class FuMalik(bound: Option[Int]) extends MaxSMT with Printer {
           case _ => ()
         }
         val core = solver.getUnsatCore().toList
+        lastCores = lastCores ++ List(core.size) //saving unsat-core size
+
         var coreLog = List[BoolExpr]()
         assumptions = assumptionsAndSwitches.map({
           case ((soft, aux), (orig, oldBlocks), switch) => {
