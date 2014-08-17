@@ -54,7 +54,7 @@ abstract class FuMalik(bound: Option[Int]) extends MaxSMT with Printer {
         var coreLog = List[BoolExpr]()
         assumptions = assumptionsAndSwitches.map({
           case ((soft, aux), (orig, oldBlocks), switch) => {
-            if (core.contains(switch)) {
+            if (core.size == 0 || core.contains(switch)) {
               coreLog = soft :: coreLog
               val blockVar = z3.mkBoolConst(UniqueName.withPrefix("b"))
               blockVars = blockVar :: blockVars
