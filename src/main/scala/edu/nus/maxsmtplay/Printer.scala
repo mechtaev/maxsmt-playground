@@ -18,7 +18,7 @@ trait Printer {
   }
 
   def writeLog(name: String, content: String) {
-    val file = new File(".").getAbsolutePath() + "/log/" + name + ".log"
-    writeToFile(file, content)
+    // val file = new File(".").getAbsolutePath() + "/log/" + name + ".log"
+    // writeToFile(file, content)
   }
 }
