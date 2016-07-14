@@ -20,7 +20,7 @@ trait Z3 {
   }
 
   def delete() = {
-    z3.dispose()
+//    z3.dispose()
   }
 
   def assertAssumptions(constraints: List[BoolExpr]): List[(BoolExpr, BoolExpr)] = {
